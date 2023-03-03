@@ -1,2 +1,20 @@
-# CMPT785-A1-DefensiveCoding
-In this assignment, you will practice topics related to defensive programming. You are given a flask app that is created for two types of users: Admin and Normal users. Admin can upload/delete files and all users can read the files. Follow the instructions below to complete the assignment:
+# Getting Started
+
+Starting the app : `docker compose up`
+Making changes and rebuilding the app : `docker compose build`
+
+# Tasks
+1. Identify security issues, misconfigurations 
+2. Write PoC or manual steps on how you would exploit these issues with screenshots.
+3. Provide fixes for each of the issues reported.
+
+## Kind of issues you can expect
+* JWT related issues
+* SQL
+* Logging untrusted using input
+* Hardcoded secrets
+* Broken Access Control
+* Sensitive data exposure
+* Cryptographic failures
+* Cookies
+* Anything else you may find ;)
