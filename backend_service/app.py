@@ -35,8 +35,9 @@ logging.basicConfig(level=logging.INFO)
 db = DatabaseUtils()
 fs = FileStorage()
 
-# Generate salt for hashing passwords
-salt = bcrypt.gensalt()
+# Generate salt for hashing passwords using higher number of rounds
+# This will increase the password hashing time, thus slowing down a potential attacker
+salt = bcrypt.gensalt(rounds=14)
 
 def _init_app():
 
@@ -79,7 +80,7 @@ def login():
     password = sqlite3.escape_string(request.json.get("password"))
 
     # Hash passwords of the user to using random salts to prevent some password attacks
-    password = hashlib.sha256(password.encode() + salt).hexdigest()
+    password = bcrypt.hashpw(password.encode(), salt)
 
     rows = db.fetch_data("SELECT * FROM users WHERE username = ? AND password = ?", [username, password])
 
