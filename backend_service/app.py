@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.INFO)
 db = DatabaseUtils()
 fs = FileStorage()
 
-# Generate a 32-byte random salt value
+# Generate a 32-byte random salt value for hashing passwords
 salt = secrets.token_bytes(32)
 
 def _init_app():
@@ -44,7 +44,7 @@ def _init_app():
                             privilege INTEGER
                         );''', [])
 
-    # Use salt along with hashed passwords
+    # Use salt along with hashed passwords to prevent some password attacks
     non_admin_password = hashlib.sha256('password1'.encode() + salt).hexdigest()
     admin_password = hashlib.sha256('adminpassword1'.encode() + salt).hexdigest()
 
@@ -70,9 +70,9 @@ def login():
     username = request.json.get("username")
     password = request.json.get("password")
 
+    # Hash passwords of the user to using random salts to prevent some password attacks
     password = hashlib.sha256(password.encode() + salt).hexdigest()
 
-    rows = db.fetch_data(f"SELECT * FROM users where username='{username}' AND password='{password}'")
     rows = db.fetch_data("SELECT * FROM users WHERE username = ? AND password = ?", [username, password])
 
     if len(rows) != 1:
