@@ -15,6 +15,8 @@ Research on common SQL and JWT issues and bypasses.
 from flask import Flask, request, make_response
 import jwt
 import pickle
+import hashlib
+import secrets
 import sqlite3
 import logging
 from utils.db_utils import DatabaseUtils
@@ -28,6 +30,9 @@ logging.basicConfig(level=logging.INFO)
 db = DatabaseUtils()
 fs = FileStorage()
 
+# Generate a 32-byte random salt value
+salt = secrets.token_bytes(32)
+
 def _init_app():
     db.update_data("DROP TABLE IF EXISTS users;")
     db.update_data('''CREATE TABLE IF NOT EXISTS users (
@@ -36,8 +41,10 @@ def _init_app():
                             password TEXT NOT NULL,
                             privilege INTEGER
                         );''')
-    db.update_data("INSERT INTO users (username, password, privilege) VALUES ('user1', 'password1', 0)")
-    db.update_data("INSERT INTO users (username, password, privilege) VALUES ('admin1', 'adminpassword1', 1)")
+
+    # Use salt along with hashed passwords
+    db.update_data("INSERT INTO users (username, password, privilege) VALUES ('user1', hashlib.sha256('password1'.encode() + salt).hexdigest(), 0)")
+    db.update_data("INSERT INTO users (username, password, privilege) VALUES ('admin1', hashlib.sha256('adminpassword1'.encode() + salt).hexdigest(), 1)")
         
 
 def _check_login():
@@ -57,6 +64,8 @@ def _check_login():
 def login():
     username = request.json.get("username")
     password = request.json.get("password")
+
+    password = hashlib.sha256(password.encode() + salt).hexdigest()
 
     rows = db.fetch_data(f"SELECT * FROM users where username='{username}' AND password='{password}'")
 
