@@ -16,6 +16,10 @@ class DatabaseUtils:
             raise "username or password cannot be null or empty"
 
         # sanitize input further
+        # ref: https://bleach.readthedocs.io/en/latest/clean.html
+        # This function is a security-focused function
+        # whose sole purpose is to remove malicious content from a string
+        # such that it can be displayed as content in a web page.
         params = [bleach.clean(p) for p in params]
 
         with sqlite3.connect(self.database_name) as conn:
