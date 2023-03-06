@@ -1,4 +1,5 @@
 import sqlite3
+import bleach
 
 class DatabaseUtils:
 
@@ -9,6 +10,14 @@ class DatabaseUtils:
         '''
         For select queries. Fetches data from the database and returns as a list of rows
         '''
+
+        # Validating input: Check for null or empty values
+        if not params:
+            raise "username or password cannot be null or empty"
+
+        # sanitize input further
+        params = [bleach.clean(p) for p in params]
+
         with sqlite3.connect(self.database_name) as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)

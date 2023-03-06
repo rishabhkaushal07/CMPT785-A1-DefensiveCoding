@@ -76,6 +76,8 @@ def _check_login():
 def login():
 
     # Sanitize username and password inputs to prevent SQL injection attacks
+    # SQLite3::escapeString - Returns a string that has been properly escaped for safe inclusion in an SQL statement
+    # ref: https://www.php.net/manual/en/sqlite3.escapestring.php
     username = sqlite3.escape_string(request.json.get("username"))
     password = sqlite3.escape_string(request.json.get("password"))
 
