@@ -99,8 +99,13 @@ def login():
     # Devs knowing some security sure is useful! :P
 
     res = make_response()
-    res.set_cookie("token", value=obfuscate3, samesite="strict")
-    res.set_cookie("admin", value='true' if rows[0][-1]==1 else 'false', samesite="strict")
+
+    # ref: set_cookie docs
+    # param secure=True will make sure that the cookie will only be available via HTTPS
+    # param httponly=True: Disallow JavaScript access to the cookie.
+    # param samesite: Limit the scope of the cookie to only be attached to requests that are "same-site".
+    res.set_cookie("token", value=obfuscate3, httponly=True, secure=True, samesite="strict")
+    res.set_cookie("admin", value='true' if rows[0][-1]==1 else 'false', samesite="strict", httponly=True, secure=True)
 
     return res
 
