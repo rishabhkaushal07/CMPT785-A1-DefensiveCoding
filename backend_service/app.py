@@ -97,6 +97,9 @@ def login():
     if len(rows) != 1:
         return "Invalid credentials"
 
+    admin = 'true' if rows[0][-1] == 1 else 'false'
+    token = jwt.encode({"username": username, "is_admin": admin}, SECRET_KEY, algorithm="HS256")
+
     # JWT token should expire after a finite time, ideally 20 mins
     jwt_expiration_time = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=20)
 
@@ -115,7 +118,6 @@ def login():
     # param httponly=True: Disallow JavaScript access to the cookie.
     # param samesite: Limit the scope of the cookie to only be attached to requests that are "same-site".
     res.set_cookie("token", value=obfuscate3, httponly=True, secure=True, samesite="strict")
-    res.set_cookie("admin", value='true' if rows[0][-1]==1 else 'false', samesite="strict", httponly=True, secure=True)
 
     return res
 
@@ -131,7 +133,16 @@ def store_file():
     except:
         return "Not logged in"
 
-    is_admin = True if request.cookies.get('admin', 'false')=='true' else False
+    # is_admin = True if request.cookies.get('admin', 'false')=='true' else False
+    is_admin = data['is_admin'] == "true"
+    username = (data['username'])
+    conn = sqlite3.connect('common_db.db')
+    cursor = conn.cursor()
+    query = "SELECT * FROM users WHERE username = ?"
+    rows = cursor.execute(query, (username,)).fetchall()
+    cursor = conn.cursor()
+    if len(rows) == 0:
+        return "Username not found"
 
     if request.method == 'GET':
         filename = request.args.get('filename')
