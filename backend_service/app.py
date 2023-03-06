@@ -17,6 +17,8 @@ import jwt
 import pickle
 import hashlib
 import secrets
+import os
+import base64
 import sqlite3
 import logging
 from utils.db_utils import DatabaseUtils
@@ -25,7 +27,7 @@ from utils.file_storage import FileStorage
 app = Flask(__name__)
 
 # use a random hard to guess secret key
-SECRET_KEY = "xLkNjKQmGtEw8bQeKjAaPzvqY3rW8zjg"
+SECRET_KEY = base64.urlsafe_b64encode(os.urandom(64)).decode('utf-8')
 
 logging.basicConfig(level=logging.INFO)
 db = DatabaseUtils()
