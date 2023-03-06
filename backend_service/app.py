@@ -34,17 +34,22 @@ fs = FileStorage()
 salt = secrets.token_bytes(32)
 
 def _init_app():
-    db.update_data("DROP TABLE IF EXISTS users;")
+
+    # strictly using parameterized queries
+    db.update_data("DROP TABLE IF EXISTS users;", [])
     db.update_data('''CREATE TABLE IF NOT EXISTS users (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             username TEXT NOT NULL,
                             password TEXT NOT NULL,
                             privilege INTEGER
-                        );''')
+                        );''', [])
 
     # Use salt along with hashed passwords
-    db.update_data("INSERT INTO users (username, password, privilege) VALUES ('user1', hashlib.sha256('password1'.encode() + salt).hexdigest(), 0)")
-    db.update_data("INSERT INTO users (username, password, privilege) VALUES ('admin1', hashlib.sha256('adminpassword1'.encode() + salt).hexdigest(), 1)")
+    non_admin_password = hashlib.sha256('password1'.encode() + salt).hexdigest()
+    admin_password = hashlib.sha256('adminpassword1'.encode() + salt).hexdigest()
+
+    db.update_data("INSERT INTO users (username, password, privilege) VALUES (?, ?, ?)", ["user1", non_admin_password, 0])
+    db.update_data("INSERT INTO users (username, password, privilege) VALUES (?, ?, ?)", ["admin1", admin_password, 1])
         
 
 def _check_login():
@@ -68,6 +73,7 @@ def login():
     password = hashlib.sha256(password.encode() + salt).hexdigest()
 
     rows = db.fetch_data(f"SELECT * FROM users where username='{username}' AND password='{password}'")
+    rows = db.fetch_data("SELECT * FROM users WHERE username = ? AND password = ?", [username, password])
 
     if len(rows) != 1:
         return "Invalid credentials"
