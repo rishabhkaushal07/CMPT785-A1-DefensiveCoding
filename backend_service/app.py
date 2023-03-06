@@ -19,6 +19,7 @@ import hashlib
 import secrets
 import os
 import base64
+import datetime
 import sqlite3
 import logging
 from utils.db_utils import DatabaseUtils
@@ -53,7 +54,7 @@ def _init_app():
 
     db.update_data("INSERT INTO users (username, password, privilege) VALUES (?, ?, ?)", ["user1", non_admin_password, 0])
     db.update_data("INSERT INTO users (username, password, privilege) VALUES (?, ?, ?)", ["admin1", admin_password, 1])
-        
+
 
 def _check_login():
     auth_token = request.cookies.get('token', None)
@@ -80,8 +81,11 @@ def login():
 
     if len(rows) != 1:
         return "Invalid credentials"
-    
-    token = jwt.encode({ "username": username }, SECRET_KEY, algorithm="HS256")
+
+    # JWT token should expire after a finite time, ideally 20 mins
+    jwt_expiration_time = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=20)
+
+    token = jwt.encode({ "username": username, "exp": jwt_expiration_time }, SECRET_KEY, algorithm="HS256")
     obfuscate1 = pickle.dumps(token.encode())
     obfuscate2 = obfuscate1.hex()
     obfuscate3 = obfuscate2[len(obfuscate2)//2:] + obfuscate2[:len(obfuscate2)//2]
