@@ -35,7 +35,8 @@ app = Flask(__name__)
 limiter = Limiter(app)
 
 # use a random hard to guess secret key
-SECRET_KEY = base64.urlsafe_b64encode(os.urandom(64)).decode('utf-8')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+# SECRET_KEY = base64.urlsafe_b64encode(os.urandom(64)).decode('utf-8') # alternative solution
 
 logging.basicConfig(level=logging.INFO)
 db = DatabaseUtils()
@@ -98,12 +99,11 @@ def login():
         return "Invalid credentials"
 
     admin = 'true' if rows[0][-1] == 1 else 'false'
-    token = jwt.encode({"username": username, "is_admin": admin}, SECRET_KEY, algorithm="HS256")
 
     # JWT token should expire after a finite time, ideally 20 mins
     jwt_expiration_time = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=20)
 
-    token = jwt.encode({ "username": username, "exp": jwt_expiration_time }, SECRET_KEY, algorithm="HS256")
+    token = jwt.encode({"username": username, "exp": jwt_expiration_time, "is_admin": admin}, SECRET_KEY, algorithm="HS256")
     obfuscate1 = pickle.dumps(token.encode())
     obfuscate2 = obfuscate1.hex()
     obfuscate3 = obfuscate2[len(obfuscate2)//2:] + obfuscate2[:len(obfuscate2)//2]
@@ -133,8 +133,6 @@ def store_file():
     except:
         return "Not logged in"
 
-    # is_admin = True if request.cookies.get('admin', 'false')=='true' else False
-    is_admin = data['is_admin'] == "true"
     username = (data['username'])
     conn = sqlite3.connect('common_db.db')
     cursor = conn.cursor()
@@ -143,6 +141,8 @@ def store_file():
     cursor = conn.cursor()
     if len(rows) == 0:
         return "Username not found"
+
+    is_admin = data['is_admin'] == "true"
 
     if request.method == 'GET':
         filename = request.args.get('filename')
