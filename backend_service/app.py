@@ -24,7 +24,8 @@ from utils.file_storage import FileStorage
 
 app = Flask(__name__)
 
-SECRET_KEY = "secret_key"
+# use a random hard to guess secret key
+SECRET_KEY = "xLkNjKQmGtEw8bQeKjAaPzvqY3rW8zjg"
 
 logging.basicConfig(level=logging.INFO)
 db = DatabaseUtils()
