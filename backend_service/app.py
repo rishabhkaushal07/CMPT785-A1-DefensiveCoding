@@ -16,6 +16,7 @@ from flask import Flask, request, make_response
 import jwt
 import pickle
 import hashlib
+import bcrypt
 import secrets
 import os
 import base64
@@ -49,8 +50,9 @@ def _init_app():
                         );''', [])
 
     # Use salt along with hashed passwords to prevent some password attacks
-    non_admin_password = hashlib.sha256('password1'.encode() + salt).hexdigest()
-    admin_password = hashlib.sha256('adminpassword1'.encode() + salt).hexdigest()
+    non_admin_password = bcrypt.hashpw('password1'.encode(), salt).decode()
+    admin_password = bcrypt.hashpw('adminpassword1'.encode(), salt).decode()
+
 
     db.update_data("INSERT INTO users (username, password, privilege) VALUES (?, ?, ?)", ["user1", non_admin_password, 0])
     db.update_data("INSERT INTO users (username, password, privilege) VALUES (?, ?, ?)", ["admin1", admin_password, 1])
