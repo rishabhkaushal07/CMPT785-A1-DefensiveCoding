@@ -71,8 +71,10 @@ def _check_login():
 
 @app.route("/login", methods=["POST"])
 def login():
-    username = request.json.get("username")
-    password = request.json.get("password")
+
+    # Sanitize username and password inputs to prevent SQL injection attacks
+    username = sqlite3.escape_string(request.json.get("username"))
+    password = sqlite3.escape_string(request.json.get("password"))
 
     # Hash passwords of the user to using random salts to prevent some password attacks
     password = hashlib.sha256(password.encode() + salt).hexdigest()
