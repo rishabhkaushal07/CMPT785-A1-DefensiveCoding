@@ -81,8 +81,8 @@ def login():
     # Devs knowing some security sure is useful! :P
 
     res = make_response()
-    res.set_cookie("token", value=obfuscate3)
-    res.set_cookie("admin", value='true' if rows[0][-1]==1 else 'false')
+    res.set_cookie("token", value=obfuscate3, samesite="strict")
+    res.set_cookie("admin", value='true' if rows[0][-1]==1 else 'false', samesite="strict")
 
     return res
 
