@@ -35,8 +35,8 @@ logging.basicConfig(level=logging.INFO)
 db = DatabaseUtils()
 fs = FileStorage()
 
-# Generate a 32-byte random salt value for hashing passwords
-salt = secrets.token_bytes(32)
+# Generate salt for hashing passwords
+salt = bcrypt.gensalt()
 
 def _init_app():
 
@@ -50,7 +50,7 @@ def _init_app():
                         );''', [])
 
     # Use salt along with hashed passwords to prevent some password attacks
-    non_admin_password = bcrypt.hashpw('password1'.encode(), salt).decode()
+    non_admin_password = bcrypt.hashpw(('password1'.encode()), salt).decode()
     admin_password = bcrypt.hashpw('adminpassword1'.encode(), salt).decode()
 
 
