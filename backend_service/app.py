@@ -26,7 +26,13 @@ import logging
 from utils.db_utils import DatabaseUtils
 from utils.file_storage import FileStorage
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 app = Flask(__name__)
+
+# limit login requests to SQLite to prevent password guessing attacks
+limiter = Limiter(app)
 
 # use a random hard to guess secret key
 SECRET_KEY = base64.urlsafe_b64encode(os.urandom(64)).decode('utf-8')
@@ -73,6 +79,8 @@ def _check_login():
 
 
 @app.route("/login", methods=["POST"])
+# limit login requests to SQLite to prevent password guessing attacks
+@limiter.limit("10 per minute")
 def login():
 
     # Sanitize username and password inputs to prevent SQL injection attacks
